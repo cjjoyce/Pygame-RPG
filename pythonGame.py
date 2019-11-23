@@ -29,35 +29,6 @@ displaySurface = pygame.display.set_mode((screenPixelWidth, screenPixelHeight), 
 fps = 60
 fpsClock = pygame.time.Clock()
 
-playerDown = pygame.image.load('images\\sprites\\playerDown.png')
-playerDown = pygame.transform.scale(playerDown,(tileSize, int(tileSize + (tileSize / 4))))
-playerDownStep1 = pygame.image.load('images\\sprites\\playerDownStep1.png')
-playerDownStep1 = pygame.transform.scale(playerDownStep1,(tileSize, int(tileSize + (tileSize / 4))))
-playerDownStep2 = pygame.image.load('images\\sprites\\playerDownStep2.png')
-playerDownStep2 = pygame.transform.scale(playerDownStep2,(tileSize, int(tileSize + (tileSize / 4))))
-
-playerUp = pygame.image.load('images\\sprites\\playerUp.png')
-playerUp = pygame.transform.scale(playerUp,(tileSize, int(tileSize + (tileSize / 4))))
-playerUpStep1 = pygame.image.load('images\\sprites\\playerUpStep1.png')
-playerUpStep1 = pygame.transform.scale(playerUpStep1,(tileSize, int(tileSize + (tileSize / 4))))
-playerUpStep2 = pygame.image.load('images\\sprites\\playerUpStep2.png')
-playerUpStep2 = pygame.transform.scale(playerUpStep2,(tileSize, int(tileSize + (tileSize / 4))))
-
-playerLeft = pygame.image.load('images\\sprites\\playerLeft.png')
-playerLeft = pygame.transform.scale(playerLeft,(tileSize, int(tileSize + (tileSize / 4))))
-playerLeftStep1 = pygame.image.load('images\\sprites\\playerLeftStep1.png')
-playerLeftStep1 = pygame.transform.scale(playerLeftStep1,(tileSize, int(tileSize + (tileSize / 4))))
-playerLeftStep2 = pygame.image.load('images\\sprites\\playerLeftStep2.png')
-playerLeftStep2 = pygame.transform.scale(playerLeftStep2,(tileSize, int(tileSize + (tileSize / 4))))
-
-playerRight = pygame.image.load('images\\sprites\\playerRight.png')
-playerRight = pygame.transform.scale(playerRight,(tileSize, int(tileSize + (tileSize / 4))))
-playerRightStep1 = pygame.image.load('images\\sprites\\playerRightStep1.png')
-playerRightStep1 = pygame.transform.scale(playerRightStep1,(tileSize, int(tileSize + (tileSize / 4))))
-playerRightStep2 = pygame.image.load('images\\sprites\\playerRightStep2.png')
-playerRightStep2 = pygame.transform.scale(playerRightStep2,(tileSize, int(tileSize + (tileSize / 4))))
-
-playerImage = playerDown
 cursorImage = pygame.image.load('images\\cursor.png')
 cursorImage = pygame.transform.scale(cursorImage,(tileSize, tileSize))
 targetImage = pygame.image.load('images\\target.png')
@@ -167,12 +138,12 @@ def loadMapFiles(mapName, tileSize):
     try:
         mapBackgroundImage = pygame.image.load('maps\\' + mapName + '\\mapBackground.png')
     except:
-        mapBackgroundImage = pygame.image.load('defaultMap.png')
+        mapBackgroundImage = pygame.image.load('maps\\defaultMap.png')
 
     try:
         mapForegroundImage = pygame.image.load('maps\\' + mapName + '\\mapForeground.png')
     except:
-        mapForegroundImage = pygame.image.load('defaultMap.png')
+        mapForegroundImage = pygame.image.load('maps\\defaultMap.png')
 
     mapPixelWidth = mapBackgroundImage.get_width()
     mapPixelHeight = mapBackgroundImage.get_height()
@@ -317,7 +288,7 @@ def startGame(event, currentScreen, gameVariables, userInputs):
     currentMapPixelWidth, currentMapPixelHeight = currentMapPixelDimensions
 
     
-    playerX, playerY, playerDirection, movePath, playerMove, pathIndex, playerImage, frame = playerVariables
+    playerX, playerY, playerDirection, movePath, playerMove, pathIndex, frame = playerVariables
 
     mouseButton1, mouseButton3, escapeKey = userInputs
     mouse1Held, mouse1Start = mouseButton1
@@ -352,7 +323,7 @@ def startGame(event, currentScreen, gameVariables, userInputs):
                 if len(movePath) > 1:
                     if -currentMapX + playerX < movePath[1].x:
                         if playerDirection != 'right':
-                            playerImage = playerRight
+                            #playerImage = playerRight
                             playerDirection = 'right'
                             
                         if playerX < screenMidpointX * tileSize or currentMapBackgroundImage.get_width() <= screenPixelWidth:
@@ -361,7 +332,7 @@ def startGame(event, currentScreen, gameVariables, userInputs):
                             currentMapX -= tileSize / 4
                     elif -currentMapX + playerX > movePath[1].x:
                         if playerDirection != 'left':
-                            playerImage = playerLeft
+                            #playerImage = playerLeft
                             playerDirection = 'left'
 
                         if playerX > screenMidpointX * tileSize or currentMapBackgroundImage.get_width() <= screenPixelWidth:
@@ -370,7 +341,7 @@ def startGame(event, currentScreen, gameVariables, userInputs):
                             currentMapX += tileSize / 4
                     elif -currentMapY + playerY < movePath[1].y:
                         if playerDirection != 'down':
-                            playerImage = playerDown
+                            #playerImage = playerDown
                             playerDirection = 'down'
 
                         if playerY < screenMidpointY * tileSize or currentMapBackgroundImage.get_height() <= screenPixelHeight:
@@ -380,7 +351,7 @@ def startGame(event, currentScreen, gameVariables, userInputs):
                             
                     elif -currentMapY + playerY > movePath[1].y:
                         if playerDirection != 'up':
-                            playerImage = playerUp
+                            #playerImage = playerUp
                             playerDirection = 'up'
                         
                         if playerY > screenMidpointY * tileSize or currentMapBackgroundImage.get_height() <= screenPixelHeight:
@@ -409,69 +380,69 @@ def startGame(event, currentScreen, gameVariables, userInputs):
                     ## Animate player walking
                     if playerDirection == 'down':
                         if frame == 0:
-                            playerImage = playerDown
+                            #playerImage = playerDown
                             frame += 1
                         elif frame == 1:
-                            playerImage = playerDownStep1
+                            #playerImage = playerDownStep1
                             frame += 1
                         elif frame == 2:
-                            playerImage = playerDown
+                            #playerImage = playerDown
                             frame += 1
                         elif frame == 3:
-                            playerImage = playerDownStep2
+                            #playerImage = playerDownStep2
                             frame = 0
                     elif playerDirection == 'up':
                         if frame == 0:
-                            playerImage = playerUp
+                            #playerImage = playerUp
                             frame += 1
                         elif frame == 1:
-                            playerImage = playerUpStep1
+                            #playerImage = playerUpStep1
                             frame += 1
                         elif frame == 2:
-                            playerImage = playerUp
+                            #playerImage = playerUp
                             frame += 1
                         elif frame == 3:
-                            playerImage = playerUpStep2
+                            #playerImage = playerUpStep2
                             frame = 0
                             
                     elif playerDirection == 'left':
                         if frame == 0:
-                            playerImage = playerLeft
+                            #playerImage = playerLeft
                             frame += 1
                         elif frame == 1:
-                            playerImage = playerLeftStep1
+                            #playerImage = playerLeftStep1
                             frame += 1
                         elif frame == 2:
-                            playerImage = playerLeft
+                            #playerImage = playerLeft
                             frame += 1
                         elif frame == 3:
-                            playerImage = playerLeftStep2
+                            #playerImage = playerLeftStep2
                             frame = 0
                     elif playerDirection == 'right':
                         if frame == 0:
-                            playerImage = playerRight
+                            #playerImage = playerRight
                             frame += 1
                         elif frame == 1:
-                            playerImage = playerRightStep1
+                            #playerImage = playerRightStep1
                             frame += 1
                         elif frame == 2:
-                            playerImage = playerRight
+                            #playerImage = playerRight
                             frame += 1
                         elif frame == 3:
-                            playerImage = playerRightStep2
+                            #playerImage = playerRightStep2
                             frame = 0
 
         timeVariables = (startTime, endTime, timeList)
         
-    else:
-        if playerDirection == 'down':
-            playerImage = playerDown
-        elif playerDirection == 'up':
-            playerImage = playerUp
-        elif playerDirection == 'left':
-            playerImage = playerLeft
-        elif playerDirection == 'right':
-            playerImage = playerRight    
+##    else:
+##        if playerDirection == 'down':
+##            playerImage = playerDown
+##        elif playerDirection == 'up':
+##            playerImage = playerUp
+##        elif playerDirection == 'left':
+##            playerImage = playerLeft
+##        elif playerDirection == 'right':
+##            playerImage = playerRight    
 
     if len(movePath) <= 1:
         movePath = []
@@ -569,7 +540,7 @@ def startGame(event, currentScreen, gameVariables, userInputs):
     currentMapPixelDimensions = (currentMapPixelWidth, currentMapPixelHeight)    
 
     #Pack Return Variables
-    playerVariables = (playerX, playerY, playerDirection, movePath, playerMove, pathIndex, playerImage, frame)
+    playerVariables = (playerX, playerY, playerDirection, movePath, playerMove, pathIndex, frame)
     mapVariables = (currentMapName, currentObstacleMap, currentMapImages, currentMapPixelDimensions, currentMapLocation)
     gameVariables = (mapVariables, playerVariables, timeVariables)
     mouseButton1 = (mouse1Held, mouse1Start)
@@ -728,7 +699,6 @@ def main():
     escapeKeyHeld = escapeKeyStart = False
     escapeKey = (escapeKeyHeld, escapeKeyStart)
     userInputs = (mouseButton1, mouseButton3, escapeKey)
-    playerImage = playerDown
 
     currentScreen = 'startGame'
     currentMapName = loadedGame[1].strip()
@@ -746,7 +716,7 @@ def main():
     currentMapLocation = (currentMapX, currentMapY)
     mapVariables = (currentMapName, currentObstacleMap, currentMapImages, currentMapDimensions, currentMapLocation)
     
-    playerVariables = (playerX, playerY, '', '', False, '', playerImage, 0)
+    playerVariables = (playerX, playerY, '', '', False, '', 0)
     gameVariables = (mapVariables, playerVariables, timeVariables)
     while True:
         for event in pygame.event.get():
