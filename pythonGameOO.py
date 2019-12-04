@@ -335,7 +335,7 @@ class Game():
         
         fpsClock = pygame.time.Clock()
         mouse1Init = False
-        mouse3Start = False
+        mouse3Init = False
 
         while True:
             for event in pygame.event.get():
@@ -349,7 +349,7 @@ class Game():
                         
                     if event.button == 3:
                         mouse3Held = True
-                        mouse3Start = True
+                        mouse3Init = True
                         
                 if event.type == MOUSEBUTTONUP:
                     if event.button == 1:
@@ -358,15 +358,15 @@ class Game():
                         
                     if event.button == 3:
                         mouse3Held = False
-                        mouse3Start = False
+                        mouse3Init = False
                         
             pygame.draw.rect(game.surface, (255,255,255), (0,0,960,640))
             self.tilemap.drawObstacles((0, 0, 255))
             if mouse1Init:
                 mouse1Init = False
                 self.player.createPath(self.cursor, self.tilemap)
-            if mouse3Start:
-                mouse3Start = False
+            if mouse3Init:
+                mouse3Init = False
                 oldTileSize = game.tileSize
                 game.tileSize = 16
                 self.player.updateSize(oldTileSize)
