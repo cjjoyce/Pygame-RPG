@@ -85,8 +85,6 @@ def createNewMap(newMapName):
     f.close
     f = open("maps\\" + newMapName + "\\portals.txt","w+")
     f.close
-    f = open("maps\\" + newMapName + "\\food.txt","w+")
-    f.close
 
 def mapSelector(event, currentScreen):
     currentMap = ''
@@ -194,7 +192,6 @@ def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapIm
             try:
                 saveMap('maps\\' + selectedMap + '\\obstacles.txt', obstacleMap)
                 saveMap('maps\\' + selectedMap + '\\portals.txt', portalMap)
-                saveMap('maps\\' + selectedMap + '\\food.txt', foodMap)
                 print("Map saved successfully to: maps" + '\\' + selectedMap)
             except:
                 print("Failed to save map.")
