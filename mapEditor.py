@@ -124,21 +124,21 @@ def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapIm
     selectedMap, selectedLayer, cursorColour = mapSelections
     currentMap, obstacleMap, portalMap = rectangleMaps
     mouseButton1, mouseButton3 = userInputs
-    mouse1Held, mouse1Start = mouseButton1
-    mouse3Held, mouse3Start = mouseButton3
+    mouse1Held, mouse1Init = mouseButton1
+    mouse3Held, mouse3Init = mouseButton3
     pygame.display.set_caption('Map Editor - Map: ' + selectedMap + ', Layer: ' + selectedLayer + ' (' + str(len(currentMap)) + ')' + ' - X: ' + str(mouseXCoord) + ', Y: ' + str(mouseYCoord) + ' | SPACE: Save, ESC: Quit, L/R Arrows: Change Layer, Up Arrow: Toggle Image')
     
     if mouse3Held:
-        if mouse3Start:
+        if mouse3Init:
             for i in currentMap[:]:
                 if (mouseXCoord * tileSize == i.x) and (mouseYCoord * tileSize == i.y):
                     currentMap.remove(i)
-            mouse3Start = False
+            mouse3Init = False
             
     if mouse1Held:
-        if mouse1Start:
+        if mouse1Init:
             startRect = pygame.Rect(mouseXCoord * tileSize, mouseYCoord * tileSize, tileSize, tileSize)
-            mouse1Start = False
+            mouse1Init = False
         dragRect.x = startRect.x
         dragRect.y = startRect.y
         if cursorRect.x >= startRect.x and cursorRect.y >= startRect.y:
@@ -158,7 +158,7 @@ def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapIm
             dragRect.x = cursorRect.x
             dragRect.y = cursorRect.y
         
-    if mouse1Held == False and mouse1Start:
+    if mouse1Held == False and mouse1Init:
         endRect = pygame.Rect(mouseXCoord * tileSize, mouseYCoord * tileSize, tileSize, tileSize)
         if endRect.x >= startRect.x and endRect.y >= startRect.y:
             startRect.width = abs(endRect.x - startRect.x) + 32
@@ -180,7 +180,7 @@ def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapIm
             startRect.x = endRect.x
             startRect.y = endRect.y
             currentMap.append(startRect)
-        mouse1Start = False
+        mouse1Init = False
                     
     if event.type == KEYDOWN:
         if event.key == (K_ESCAPE):
@@ -248,8 +248,8 @@ def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapIm
     mapSelections = (selectedMap, selectedLayer, cursorColour)
     clickAndDrag = startRect, endRect, dragRect
     rectangleMaps = (currentMap, obstacleMap, portalMap)
-    mouseButton1 = (mouse1Held, mouse1Start)
-    mouseButton3 = (mouse3Held, mouse3Start)
+    mouseButton1 = (mouse1Held, mouse1Init)
+    mouseButton3 = (mouse3Held, mouse3Init)
     userInputs = (mouseButton1, mouseButton3)
     return currentScreen, mapSelections, rectangleMaps, keyHeld, mapImage, displayImage, clickAndDrag, userInputs
 
@@ -276,24 +276,24 @@ def main():
             if event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
                     mouse1Held = True
-                    mouse1Start = True
-                    mouseButton1 = (mouse1Held, mouse1Start)
+                    mouse1Init = True
+                    mouseButton1 = (mouse1Held, mouse1Init)
                     userInputs = (mouseButton1, (False, False))
                 if event.button == 3:
                     mouse3Held = True
-                    mouse3Start = True
-                    mouseButton3 = (mouse3Held, mouse3Start)
+                    mouse3Init = True
+                    mouseButton3 = (mouse3Held, mouse3Init)
                     userInputs = ((False, False), mouseButton3)
             if event.type == MOUSEBUTTONUP:
                 if event.button == 1:
                     mouse1Held = False
-                    mouse1Start = True
-                    mouseButton1 = (mouse1Held, mouse1Start)
+                    mouse1Init = True
+                    mouseButton1 = (mouse1Held, mouse1Init)
                     userInputs = (mouseButton1, (False, False))
                 if event.button == 3:
                     mouse3Held = False
-                    mouse3Start = True
-                    mouseButton3 = (mouse3Held, mouse3Start)
+                    mouse3Init = True
+                    mouseButton3 = (mouse3Held, mouse3Init)
                     userInputs = ((False, False), mouseButton3)
         if currentScreen == 'mapSelector':
             currentScreen, mapSelections, rectangleMaps, mapImage = mapSelector(event, currentScreen)
