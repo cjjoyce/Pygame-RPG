@@ -8,6 +8,7 @@ from pygame import *
 
 pygame.init()
 
+# Get the user's monitor dimensions.
 user32 = ctypes.windll.user32
 monitorWidth = user32.GetSystemMetrics(0)
 monitorHeight = user32.GetSystemMetrics(1)
@@ -29,6 +30,35 @@ displaySurface = pygame.display.set_mode((screenPixelWidth, screenPixelHeight), 
 fps = 60
 fpsClock = pygame.time.Clock()
 
+playerDown = pygame.image.load('images\\sprites\\playerDown.png')
+playerDown = pygame.transform.scale(playerDown,(tileSize, int(tileSize + (tileSize / 4))))
+playerDownStep1 = pygame.image.load('images\\sprites\\playerDownStep1.png')
+playerDownStep1 = pygame.transform.scale(playerDownStep1,(tileSize, int(tileSize + (tileSize / 4))))
+playerDownStep2 = pygame.image.load('images\\sprites\\playerDownStep2.png')
+playerDownStep2 = pygame.transform.scale(playerDownStep2,(tileSize, int(tileSize + (tileSize / 4))))
+
+playerUp = pygame.image.load('images\\sprites\\playerUp.png')
+playerUp = pygame.transform.scale(playerUp,(tileSize, int(tileSize + (tileSize / 4))))
+playerUpStep1 = pygame.image.load('images\\sprites\\playerUpStep1.png')
+playerUpStep1 = pygame.transform.scale(playerUpStep1,(tileSize, int(tileSize + (tileSize / 4))))
+playerUpStep2 = pygame.image.load('images\\sprites\\playerUpStep2.png')
+playerUpStep2 = pygame.transform.scale(playerUpStep2,(tileSize, int(tileSize + (tileSize / 4))))
+
+playerLeft = pygame.image.load('images\\sprites\\playerLeft.png')
+playerLeft = pygame.transform.scale(playerLeft,(tileSize, int(tileSize + (tileSize / 4))))
+playerLeftStep1 = pygame.image.load('images\\sprites\\playerLeftStep1.png')
+playerLeftStep1 = pygame.transform.scale(playerLeftStep1,(tileSize, int(tileSize + (tileSize / 4))))
+playerLeftStep2 = pygame.image.load('images\\sprites\\playerLeftStep2.png')
+playerLeftStep2 = pygame.transform.scale(playerLeftStep2,(tileSize, int(tileSize + (tileSize / 4))))
+
+playerRight = pygame.image.load('images\\sprites\\playerRight.png')
+playerRight = pygame.transform.scale(playerRight,(tileSize, int(tileSize + (tileSize / 4))))
+playerRightStep1 = pygame.image.load('images\\sprites\\playerRightStep1.png')
+playerRightStep1 = pygame.transform.scale(playerRightStep1,(tileSize, int(tileSize + (tileSize / 4))))
+playerRightStep2 = pygame.image.load('images\\sprites\\playerRightStep2.png')
+playerRightStep2 = pygame.transform.scale(playerRightStep2,(tileSize, int(tileSize + (tileSize / 4))))
+
+playerImage = playerDown
 cursorImage = pygame.image.load('images\\cursor.png')
 cursorImage = pygame.transform.scale(cursorImage,(tileSize, tileSize))
 targetImage = pygame.image.load('images\\target.png')
@@ -281,19 +311,19 @@ def aStar(startRect, targetRect, obstacleMap, mapDimensions):
 def startGame(event, currentScreen, gameVariables, userInputs):
 
     #Unpack Parameter Variables
-    mapVariables, playerVariables, timeVariables = gameVariables
+    mapVariables, playerVariables = gameVariables
     currentMapName, currentObstacleMap, currentMapImages, currentMapPixelDimensions, currentMapLocation = mapVariables
     
     currentMapBackgroundImage, currentMapForegroundImage = currentMapImages
     currentMapPixelWidth, currentMapPixelHeight = currentMapPixelDimensions
 
     
-    playerX, playerY, playerDirection, movePath, playerMove, pathIndex, frame = playerVariables
+    playerX, playerY, playerDirection, movePath, playerMove, playerDelay, playerImage, frame = playerVariables
 
     mouseButton1, mouseButton3, escapeKey = userInputs
-    mouse1Held, mouse1Start = mouseButton1
+    mouse1Held, mouse1Init = mouseButton1
     
-    escapeKeyHeld, escapeKeyStart = escapeKey
+    escapeKeyHeld, escapeKeyInit = escapeKey
     currentMapX, currentMapY = currentMapLocation
     (mouseX, mouseY) = pygame.mouse.get_pos()
     (mouseXCoord, mouseYCoord) = tilePixelsToCoordinates(mouseX, mouseY)
@@ -306,143 +336,131 @@ def startGame(event, currentScreen, gameVariables, userInputs):
 
     
     if len(movePath) > 1:
-        
-        
-        startTime, endTime, timeList = timeVariables
-        endTime = pygame.time.get_ticks()
-        timeList += endTime - startTime
-        startTime = pygame.time.get_ticks()
-
-        if timeList > 1:
-            timeList = 0
-            pathIndex += 1
-                    
-            if (pathIndex % 7) == 0:
-                if -currentMapX + playerX == movePath[1].x and -currentMapY + playerY == movePath[1].y:
-                    movePath.pop(0)
-                if len(movePath) > 1:
-                    if -currentMapX + playerX < movePath[1].x:
-                        if playerDirection != 'right':
-                            #playerImage = playerRight
-                            playerDirection = 'right'
-                            
-                        if playerX < screenMidpointX * tileSize or currentMapBackgroundImage.get_width() <= screenPixelWidth:
-                            playerX += tileSize / 4
-                        else:
-                            currentMapX -= tileSize / 4
-                    elif -currentMapX + playerX > movePath[1].x:
-                        if playerDirection != 'left':
-                            #playerImage = playerLeft
-                            playerDirection = 'left'
-
-                        if playerX > screenMidpointX * tileSize or currentMapBackgroundImage.get_width() <= screenPixelWidth:
-                            playerX -= tileSize / 4
-                        else:
-                            currentMapX += tileSize / 4
-                    elif -currentMapY + playerY < movePath[1].y:
-                        if playerDirection != 'down':
-                            #playerImage = playerDown
-                            playerDirection = 'down'
-
-                        if playerY < screenMidpointY * tileSize or currentMapBackgroundImage.get_height() <= screenPixelHeight:
-                            playerY += tileSize / 4
-                        else:
-                            currentMapY -= tileSize / 4
-                            
-                    elif -currentMapY + playerY > movePath[1].y:
-                        if playerDirection != 'up':
-                            #playerImage = playerUp
-                            playerDirection = 'up'
+        playerDelay += 1
+        if (playerDelay % 7) == 0:
+            if -currentMapX + playerX == movePath[1].x and -currentMapY + playerY == movePath[1].y:
+                movePath.pop(0)
+            if len(movePath) > 1:
+                if -currentMapX + playerX < movePath[1].x:
+                    if playerDirection != 'right':
+                        playerImage = playerRight
+                        playerDirection = 'right'
                         
-                        if playerY > screenMidpointY * tileSize or currentMapBackgroundImage.get_height() <= screenPixelHeight:
-                            playerY -= tileSize / 4
-                        else:
-                            currentMapY += tileSize / 4
+                    if playerX < screenMidpointX * tileSize or currentMapBackgroundImage.get_width() <= screenPixelWidth:
+                        playerX += tileSize / 4
+                    else:
+                        currentMapX -= tileSize / 4
+                elif -currentMapX + playerX > movePath[1].x:
+                    if playerDirection != 'left':
+                        playerImage = playerLeft
+                        playerDirection = 'left'
 
-                    if currentMapBackgroundImage.get_width() > screenPixelWidth:
-                        if currentMapX > 0:
-                            currentMapX = 0
-                            playerX -= tileSize / 4
-                        if currentMapX < screenPixelWidth - currentMapBackgroundImage.get_width():
-                            currentMapX = screenPixelWidth - currentMapBackgroundImage.get_width()
-                            playerX += tileSize / 4
-                            
-                    
-                    if currentMapBackgroundImage.get_height() > screenPixelHeight:
-                        if currentMapY > 0:
-                            currentMapY = 0
-                            playerY -= tileSize / 4
-                        if currentMapY < screenPixelHeight - currentMapBackgroundImage.get_height():
-                            currentMapY = screenPixelHeight - currentMapBackgroundImage.get_height()
-                            playerY += tileSize / 4
+                    if playerX > screenMidpointX * tileSize or currentMapBackgroundImage.get_width() <= screenPixelWidth:
+                        playerX -= tileSize / 4
+                    else:
+                        currentMapX += tileSize / 4
+                elif -currentMapY + playerY < movePath[1].y:
+                    if playerDirection != 'down':
+                        playerImage = playerDown
+                        playerDirection = 'down'
 
+                    if playerY < screenMidpointY * tileSize or currentMapBackgroundImage.get_height() <= screenPixelHeight:
+                        playerY += tileSize / 4
+                    else:
+                        currentMapY -= tileSize / 4
                         
-                    ## Animate player walking
-                    if playerDirection == 'down':
-                        if frame == 0:
-                            #playerImage = playerDown
-                            frame += 1
-                        elif frame == 1:
-                            #playerImage = playerDownStep1
-                            frame += 1
-                        elif frame == 2:
-                            #playerImage = playerDown
-                            frame += 1
-                        elif frame == 3:
-                            #playerImage = playerDownStep2
-                            frame = 0
-                    elif playerDirection == 'up':
-                        if frame == 0:
-                            #playerImage = playerUp
-                            frame += 1
-                        elif frame == 1:
-                            #playerImage = playerUpStep1
-                            frame += 1
-                        elif frame == 2:
-                            #playerImage = playerUp
-                            frame += 1
-                        elif frame == 3:
-                            #playerImage = playerUpStep2
-                            frame = 0
-                            
-                    elif playerDirection == 'left':
-                        if frame == 0:
-                            #playerImage = playerLeft
-                            frame += 1
-                        elif frame == 1:
-                            #playerImage = playerLeftStep1
-                            frame += 1
-                        elif frame == 2:
-                            #playerImage = playerLeft
-                            frame += 1
-                        elif frame == 3:
-                            #playerImage = playerLeftStep2
-                            frame = 0
-                    elif playerDirection == 'right':
-                        if frame == 0:
-                            #playerImage = playerRight
-                            frame += 1
-                        elif frame == 1:
-                            #playerImage = playerRightStep1
-                            frame += 1
-                        elif frame == 2:
-                            #playerImage = playerRight
-                            frame += 1
-                        elif frame == 3:
-                            #playerImage = playerRightStep2
-                            frame = 0
+                elif -currentMapY + playerY > movePath[1].y:
+                    if playerDirection != 'up':
+                        playerImage = playerUp
+                        playerDirection = 'up'
+                    
+                    if playerY > screenMidpointY * tileSize or currentMapBackgroundImage.get_height() <= screenPixelHeight:
+                        playerY -= tileSize / 4
+                    else:
+                        currentMapY += tileSize / 4
 
-        timeVariables = (startTime, endTime, timeList)
+                if currentMapBackgroundImage.get_width() > screenPixelWidth:
+                    if currentMapX > 0:
+                        currentMapX = 0
+                        playerX -= tileSize / 4
+                    if currentMapX < screenPixelWidth - currentMapBackgroundImage.get_width():
+                        currentMapX = screenPixelWidth - currentMapBackgroundImage.get_width()
+                        playerX += tileSize / 4
+                        
+                
+                if currentMapBackgroundImage.get_height() > screenPixelHeight:
+                    if currentMapY > 0:
+                        currentMapY = 0
+                        playerY -= tileSize / 4
+                    if currentMapY < screenPixelHeight - currentMapBackgroundImage.get_height():
+                        currentMapY = screenPixelHeight - currentMapBackgroundImage.get_height()
+                        playerY += tileSize / 4
+
+                    
+                ## Animate player walking
+                if playerDirection == 'down':
+                    if frame == 0:
+                        playerImage = playerDown
+                        frame += 1
+                    elif frame == 1:
+                        playerImage = playerDownStep1
+                        frame += 1
+                    elif frame == 2:
+                        playerImage = playerDown
+                        frame += 1
+                    elif frame == 3:
+                        playerImage = playerDownStep2
+                        frame = 0
+                elif playerDirection == 'up':
+                    if frame == 0:
+                        playerImage = playerUp
+                        frame += 1
+                    elif frame == 1:
+                        playerImage = playerUpStep1
+                        frame += 1
+                    elif frame == 2:
+                        playerImage = playerUp
+                        frame += 1
+                    elif frame == 3:
+                        playerImage = playerUpStep2
+                        frame = 0
+                        
+                elif playerDirection == 'left':
+                    if frame == 0:
+                        playerImage = playerLeft
+                        frame += 1
+                    elif frame == 1:
+                        playerImage = playerLeftStep1
+                        frame += 1
+                    elif frame == 2:
+                        playerImage = playerLeft
+                        frame += 1
+                    elif frame == 3:
+                        playerImage = playerLeftStep2
+                        frame = 0
+                elif playerDirection == 'right':
+                    if frame == 0:
+                        playerImage = playerRight
+                        frame += 1
+                    elif frame == 1:
+                        playerImage = playerRightStep1
+                        frame += 1
+                    elif frame == 2:
+                        playerImage = playerRight
+                        frame += 1
+                    elif frame == 3:
+                        playerImage = playerRightStep2
+                        frame = 0
         
-##    else:
-##        if playerDirection == 'down':
-##            playerImage = playerDown
-##        elif playerDirection == 'up':
-##            playerImage = playerUp
-##        elif playerDirection == 'left':
-##            playerImage = playerLeft
-##        elif playerDirection == 'right':
-##            playerImage = playerRight    
+    else:
+        if playerDirection == 'down':
+            playerImage = playerDown
+        elif playerDirection == 'up':
+            playerImage = playerUp
+        elif playerDirection == 'left':
+            playerImage = playerLeft
+        elif playerDirection == 'right':
+            playerImage = playerRight
 
     if len(movePath) <= 1:
         movePath = []
@@ -467,15 +485,15 @@ def startGame(event, currentScreen, gameVariables, userInputs):
             while currentMapX % tileSize != 0:
                 currentMapX += tileSize / 4
                 
-    if mouse1Start:
+    if mouse1Init: # If mouse button 1 has been clicked, create a path between the player and the cursor if possible.
         newPlayerRect = pygame.Rect(abs(currentMapX) + playerRect.x, abs(currentMapY) + playerRect.y, tileSize, tileSize)
         targetRect = pygame.Rect(abs(currentMapX) + cursorRect.x, abs(currentMapY) + cursorRect.y, tileSize, tileSize)
         movePath = aStar(newPlayerRect, targetRect, currentObstacleMap, currentMapPixelDimensions)
-        pathIndex = 0
-        mouse1Start = False
+        playerDelay = 0
+        mouse1Init = False
 
-    if escapeKeyStart:
-        escapeKeyStart = False
+    if escapeKeyInit: # If ESC key has been pressed, save and quit.
+        escapeKeyInit = False
         saveFile = 'saves\\save_data.txt'
         saveVariables = (currentMapName, currentMapX, currentMapY, playerX, playerY)
         saveGame(saveFile, saveVariables)
@@ -495,7 +513,7 @@ def startGame(event, currentScreen, gameVariables, userInputs):
         obstacleText = gameFont.render(obstacleString, True, (255, 255, 255))
         displaySurface.blit(obstacleText, (currentObstacleMap[i].x + currentMapX, currentObstacleMap[i].y + currentMapY))
 
-    #displaySurface.blit(currentMapBackgroundImage, (currentMapX, currentMapY))
+    displaySurface.blit(currentMapBackgroundImage, (currentMapX, currentMapY))
         
     playerRect = pygame.Rect((playerX, playerY - (tileSize / 2)), (tileSize, tileSize + (tileSize / 2)))
     if len(movePath) > 0:
@@ -508,17 +526,14 @@ def startGame(event, currentScreen, gameVariables, userInputs):
                 pygame.draw.line(displaySurface, (0, 0, 0), (movePath[i].x + currentMapX + tileSize / 2, movePath[i].y + currentMapY + tileSize / 2), (movePath[i+1].x + currentMapX + tileSize / 2, movePath[i+1].y + currentMapY + tileSize / 2), 1)
         displaySurface.blit(targetImage, (movePath[-1].x + currentMapX, movePath[-1].y + currentMapY, tileSize, tileSize))
         
-    #displaySurface.blit(playerImage, (playerRect.x, playerRect.y + (tileSize / 4)))
+    displaySurface.blit(playerImage, (playerRect.x, playerRect.y + (tileSize / 4)))
     
     playerNameString = "Player"
     playerNameText = gameFont.render(playerNameString, True, (255, 255, 255))
     pygame.draw.rect(displaySurface,(0, 0, 0), ((playerRect.x + playerRect.width / 2) - (gameFont.size(playerNameString)[0] / 2), playerRect.y - gameFont.size(playerNameString)[1] / 2, gameFont.size(playerNameString)[0], gameFont.size(playerNameString)[1]))
     displaySurface.blit(playerNameText,((playerRect.x + playerRect.width/2) - (gameFont.size(playerNameString)[0] / 2), playerRect.y - gameFont.size(playerNameString)[1] / 2))
 
-    pygame.draw.rect(displaySurface, (0, 255, 0), (playerRect.x, playerRect.y + tileSize/2, tileSize, tileSize))
-    pygame.draw.rect(displaySurface, (0, 0, 0), (playerRect.x, playerRect.y + tileSize/2, tileSize, tileSize), 2) ## Draw Player Rectangle
-
-    #displaySurface.blit(currentMapForegroundImage, (currentMapX, currentMapY))
+    displaySurface.blit(currentMapForegroundImage, (currentMapX, currentMapY))
 
     displaySurface.blit(cursorImage, (cursorRect.x, cursorRect.y))
 
@@ -532,175 +547,37 @@ def startGame(event, currentScreen, gameVariables, userInputs):
     else:
         displaySurface.blit(controlsTextShadow,((screenMidpointX * tileSize + (tileSize / 2)) - (gameFont.size(controlsString)[0] / 2) + 2, gameFont.size(controlsString)[1] / 2 + 1))
         displaySurface.blit(controlsText,((screenMidpointX * tileSize + (tileSize / 2)) - (gameFont.size(controlsString)[0] / 2), gameFont.size(controlsString)[1] / 2))
-
-
+    
     currentMapLocation = (currentMapX, currentMapY)
     
     currentMapImages = (currentMapBackgroundImage, currentMapForegroundImage)
     currentMapPixelDimensions = (currentMapPixelWidth, currentMapPixelHeight)    
 
     #Pack Return Variables
-    playerVariables = (playerX, playerY, playerDirection, movePath, playerMove, pathIndex, frame)
+    playerVariables = (playerX, playerY, playerDirection, movePath, playerMove, playerDelay, playerImage, frame)
     mapVariables = (currentMapName, currentObstacleMap, currentMapImages, currentMapPixelDimensions, currentMapLocation)
-    gameVariables = (mapVariables, playerVariables, timeVariables)
-    mouseButton1 = (mouse1Held, mouse1Start)
-    escapeKey = (escapeKeyHeld, escapeKeyStart)
+    gameVariables = (mapVariables, playerVariables)
+    mouseButton1 = (mouse1Held, mouse1Init)
+    escapeKey = (escapeKeyHeld, escapeKeyInit)
     userInputs = (mouseButton1, mouseButton3, escapeKey)
     return currentScreen, gameVariables, userInputs
-    
-def displayNewGameMenu(event, currentScreen, userInputs):
-    (mouseX, mouseY) = pygame.mouse.get_pos()
-    pygame.draw.rect(displaySurface, (128, 128, 128), (0, 0, 960, 640))
-    newGameMenuObjects = createRectangleList('menus\\loadMenu.txt')
-    newGameButton1 = newGameMenuObjects[0]
-    newGameButton2 = newGameMenuObjects[1]
-    newGameButton3 = newGameMenuObjects[2]
-    backButton = newGameMenuObjects[3]
-    pygame.draw.rect(displaySurface, (0, 0, 255), newGameButton1)
-    pygame.draw.rect(displaySurface, (255, 0, 0), newGameButton2)
-    pygame.draw.rect(displaySurface, (0, 255, 0), newGameButton3)
-    pygame.draw.rect(displaySurface, (0, 0, 0), backButton)
 
-    if mouseX >= newGameButton1[0] and mouseX <= (newGameButton1[0] + newGameButton1[2]) and mouseY >= newGameButton1[1] and mouseY <= (newGameButton1[1] + newGameButton1[3]):
-        pygame.draw.rect(displaySurface, (100, 100, 255), newGameButton1)
-        
-    elif mouseX >= newGameButton2[0] and mouseX <= (newGameButton2[0] + newGameButton2[2]) and mouseY >= newGameButton2[1] and mouseY <= (newGameButton2[1] + newGameButton2[3]):
-        pygame.draw.rect(displaySurface, (255, 100, 100), newGameButton2)
-        
-    elif mouseX >= newGameButton3[0] and mouseX <= (newGameButton3[0] + newGameButton3[2]) and mouseY >= newGameButton3[1] and mouseY <= (newGameButton3[1] + newGameButton3[3]):
-        pygame.draw.rect(displaySurface, (100, 255, 100), newGameButton3)
-        if event.type == MOUSEBUTTONDOWN and keyHeld == False:
-            if event.button == 1:
-                currentScreen = 'intro'
-                keyHeld = True
-
-    elif mouseX >= backButton[0] and mouseX <= (backButton[0] + backButton[2]) and mouseY >= backButton[1] and mouseY <= (backButton[1] + backButton[3]):
-        pygame.draw.rect(displaySurface, (100, 100, 100), backButton)
-        if event.type == MOUSEBUTTONDOWN and keyHeld == False:
-            if event.button == 1:
-                currentScreen = 'mainMenu'
-                keyHeld = True
-    return currentScreen, userInputs
-
-def displayLoadGameMenu(event, currentScreen, userInputs):
-    mouseButton1, mouseButton3 = userInputs
-    mouse1Held, mouse1Start = mouseButton1
-    loadedGame = []
-    (mouseX, mouseY) = pygame.mouse.get_pos()
-    pygame.draw.rect(displaySurface, (128, 128, 128), (0, 0, mapPixelWidth, mapPixelHeight))
-    loadGameMenuObjects = createRectangleList('menus\\loadMenu.txt')
-    loadGameButton1 = loadGameMenuObjects[0]
-    loadGameButton2 = loadGameMenuObjects[1]
-    loadGameButton3 = loadGameMenuObjects[2]
-    backButton = loadGameMenuObjects[3]
-    pygame.draw.rect(displaySurface, (0, 0, 255), loadGameButton1)
-    pygame.draw.rect(displaySurface, (255, 0, 0), loadGameButton2)
-    pygame.draw.rect(displaySurface, (0, 255, 0), loadGameButton3)
-    pygame.draw.rect(displaySurface, (0, 0, 0), backButton)
-    timeVariables = (0, 0, 0)
-    gameVariables = ''
-
-    if mouseX >= loadGameButton1[0] and mouseX <= (loadGameButton1[0] + loadGameButton1[2]) and mouseY >= loadGameButton1[1] and mouseY <= (loadGameButton1[1] + loadGameButton1[3]):
-        pygame.draw.rect(displaySurface, (100, 255, 100), loadGameButton1)
-        saveFile = 'saves\\save_data.txt'
-        loadedGame = loadGame(saveFile)
-        
-        printText(pygame.font.SysFont("Times New Roman", 62), loadGameButton1[0] - 450, loadGameButton1[1], re.sub(r"(\w)([0-9-A-Z])", r"\1 \2", loadedGame[1].strip()).title(), colour = (255, 255, 255))
-        if mouse1Start:
-            currentScreen = 'startGame'
-            currentMap = loadedGame[1].strip()
-            currentObstacleMap, currentFoodMap, currentPortalMap, mapBackgroundImage, mapForegroundImage, mapConnections, entryCoordinates = loadMap(currentMap, tileSize)
-            
-            playerX, playerY = tileCoordinateToPixels(loadedGame[3][0], loadedGame[3][1])
-            mapImages = (mapBackgroundImage, mapForegroundImage)
-            portalVariables = (False, '')
-            mapVariables = (currentMap, currentObstacleMap, currentFoodMap, currentPortalMap, mapImages, portalVariables, mapConnections, entryCoordinates)
-            playerVariables = (playerX, playerY, '', ('', ''), '', False, '', playerImage, False)
-            gameVariables = (mapVariables, playerVariables, timeVariables)
-            mouse1Start = False
-
-    mouseButton1 = mouse1Held, mouse1Start
-    userInputs = mouseButton1, mouseButton3
-    return currentScreen, gameVariables, userInputs
-
-def displayMainMenu(event, currentScreen, keyHeld):
-    (mouseX, mouseY) = pygame.mouse.get_pos()
-    displaySurface.blit(menuImage['mainMenu'], (0,0))
-    displaySurface.blit(menuImage['mainSelector'], (480,256))
-    pygame.draw.rect(displaySurface, (128, 128, 128), (0, 0, 960, 640))
-    menuObjects = createRectangleList('menus\\mainMenu.txt')
-    continueButton = menuObjects[0]
-    newGameButton = menuObjects[1]
-    loadGameButton = menuObjects[2]
-    optionsButton = menuObjects[3]
-    exitGameButton = menuObjects[4]
-    pygame.draw.rect(displaySurface, (0, 255, 0), continueButton)
-    pygame.draw.rect(displaySurface, (0, 255, 0), newGameButton)
-    pygame.draw.rect(displaySurface, (0, 255, 0), loadGameButton)
-    pygame.draw.rect(displaySurface, (0, 255, 0), optionsButton)
-    pygame.draw.rect(displaySurface, (0, 255, 0), exitGameButton)
-    printText(pygame.font.SysFont("Times New Roman", 68), continueButton[0] + 196.5, continueButton[1] - 5, "Continue", colour = (255, 255, 255))
-    printText(pygame.font.SysFont("Times New Roman", 62), newGameButton[0], newGameButton[1], "New Game", colour = (255, 255, 255))
-    printText(pygame.font.SysFont("Times New Roman", 62), loadGameButton[0], loadGameButton[1], "Load Game", colour = (255, 255, 255))
-    printText(pygame.font.SysFont("Times New Roman", 56), optionsButton[0] + 54, optionsButton[1] - 2, "Options", colour = (255, 255, 255))
-    printText(pygame.font.SysFont("Times New Roman", 62), exitGameButton[0] + 10, exitGameButton[1], "Exit Game", colour = (255, 255, 255))
-    
-    if mouseX >= continueButton[0] and mouseX <= (continueButton[0] + continueButton[2]) and mouseY >= continueButton[1] and mouseY <= (continueButton[1] + continueButton[3]):
-        pygame.draw.rect(displaySurface, (100, 255, 100), continueButton)
-        printText(pygame.font.SysFont("Times New Roman", 68), continueButton[0] + 196.5, continueButton[1] - 5, "Continue", colour = (255, 255, 255))
-
-    elif mouseX >= newGameButton[0] and mouseX <= (newGameButton[0] + newGameButton[2]) and mouseY >= newGameButton[1] and mouseY <= (newGameButton[1] + newGameButton[3]):
-        pygame.draw.rect(displaySurface, (100, 255, 100), newGameButton)
-        printText(pygame.font.SysFont("Times New Roman", 62), newGameButton[0], newGameButton[1], "New Game", colour = (255, 255, 255))
-        if event.type == MOUSEBUTTONDOWN and keyHeld == False:
-            if event.button == 1:
-                currentScreen = 'newGameMenu'
-                keyHeld = True
-
-
-    elif mouseX >= loadGameButton[0] and mouseX <= (loadGameButton[0] + loadGameButton[2]) and mouseY >= loadGameButton[1] and mouseY <= (loadGameButton[1] + loadGameButton[3]):
-        pygame.draw.rect(displaySurface, (100, 255, 100), loadGameButton)
-        printText(pygame.font.SysFont("Times New Roman", 62), loadGameButton[0], loadGameButton[1], "Load Game", colour = (255, 255, 255))
-        if event.type == MOUSEBUTTONDOWN and keyHeld == False:
-            if event.button == 1:
-                currentScreen = 'loadGameMenu'
-                keyHeld = True
-                
-    elif mouseX >= optionsButton[0] and mouseX <= (optionsButton[0] + optionsButton[2]) and mouseY >= optionsButton[1] and mouseY <= (optionsButton[1] + optionsButton[3]):
-        pygame.draw.rect(displaySurface, (100, 255, 100), optionsButton)
-        printText(pygame.font.SysFont("Times New Roman", 56), optionsButton[0] + 54, optionsButton[1] - 2, "Options", colour = (255, 255, 255))
-        if event.type == MOUSEBUTTONDOWN and keyHeld == False:
-            if event.button == 1:
-                caption_main = ''
-                infoText = '3'
-                print(infoText)
-                
-    elif mouseX >= exitGameButton[0] and mouseX <= (exitGameButton[0] + exitGameButton[2]) and mouseY >= exitGameButton[1] and mouseY <= (exitGameButton[1] + exitGameButton[3]):
-        pygame.draw.rect(displaySurface, (100, 255, 100), exitGameButton)
-        printText(pygame.font.SysFont("Times New Roman", 62), exitGameButton[0] + 10, exitGameButton[1], "Exit Game", colour = (255, 255, 255))
-        if event.type == MOUSEBUTTONDOWN and keyHeld == False:
-            if event.button == 1:
-                pygame.quit()
-                sys.exit()
-
-    
-
-    return currentScreen, keyHeld
 
 def main():
-    timeVariables = (0, 0, 0)
     gameVariables = ''
     saveFile = 'saves\\save_data.txt'
     loadedGame = loadGame(saveFile)
-    mouse1Held = mouse1Start = False
-    mouse3Held = mouse3Start = False
-    mouseButton1 = (mouse1Held, mouse1Start)
-    mouseButton3 = (mouse3Held, mouse3Start)
-    escapeKeyHeld = escapeKeyStart = False
-    escapeKey = (escapeKeyHeld, escapeKeyStart)
+    mouse1Held = mouse1Init = False
+    mouse3Held = mouse3Init = False
+    mouseButton1 = (mouse1Held, mouse1Init)
+    mouseButton3 = (mouse3Held, mouse3Init)
+    escapeKeyHeld = escapeKeyInit = False
+    escapeKey = (escapeKeyHeld, escapeKeyInit)
     userInputs = (mouseButton1, mouseButton3, escapeKey)
+    playerImage = playerDown
 
     currentScreen = 'startGame'
+    
     currentMapName = loadedGame[1].strip()
     currentMap = loadMap(currentMapName, tileSize)
     
@@ -716,8 +593,8 @@ def main():
     currentMapLocation = (currentMapX, currentMapY)
     mapVariables = (currentMapName, currentObstacleMap, currentMapImages, currentMapDimensions, currentMapLocation)
     
-    playerVariables = (playerX, playerY, '', '', False, '', 0)
-    gameVariables = (mapVariables, playerVariables, timeVariables)
+    playerVariables = (playerX, playerY, '', '', False, '', playerImage, 0)
+    gameVariables = (mapVariables, playerVariables)
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -726,42 +603,30 @@ def main():
             if event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
                     mouse1Held = True
-                    mouse1Start = True
-                    mouseButton1 = (mouse1Held, mouse1Start)
+                    mouse1Init = True
+                    mouseButton1 = (mouse1Held, mouse1Init)
                     userInputs = (mouseButton1, (False, False), (False, False))
             if event.type == MOUSEBUTTONUP:
                 if event.button == 1:
                     mouse1Held = False
-                    mouse1Start = False
-                    mouseButton1 = (mouse1Held, mouse1Start)
+                    mouse1Init = False
+                    mouseButton1 = (mouse1Held, mouse1Init)
                     userInputs = (mouseButton1, (False, False), (False, False))
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     escapeKeyHeld = True
-                    escapeKeyStart = True
-                    escapeKey = (escapeKeyHeld, escapeKeyStart)
+                    escapeKeyInit = True
+                    escapeKey = (escapeKeyHeld, escapeKeyInit)
                     userInputs = ((False, False), (False, False), escapeKey)
             if event.type == KEYUP:
                 if event.key == K_ESCAPE:
                     escapeKeyHeld = False
-                    escapeKeyStart = False
-                    escapeKey = (escapeKeyHeld, escapeKeyStart)
+                    escapeKeyInit = False
+                    escapeKey = (escapeKeyHeld, escapeKeyInit)
                     userInputs = ((False, False), (False, False), escapeKey)
             if event.type == KEYUP:
                 keyHeld = False
                 
-        if currentScreen == 'intro':
-            currentScreen, userInputs = displayIntro(event, currentScreen, userInputs)
-
-        if currentScreen == 'mainMenu':
-            pygame.mouse.set_visible(True)
-            currentScreen, userInputs = displayMainMenu(event, currentScreen, userInputs)
-
-        if currentScreen == 'loadGameMenu':
-            currentScreen, gameVariables, userInputs = displayLoadGameMenu(event, currentScreen, userInputs)
-            
-        if currentScreen == 'newGameMenu':
-            currentScreen, userInputs = displayNewGameMenu(event, currentScreen, userInputs)
 
         if currentScreen == 'startGame':
             currentScreen, gameVariables, userInputs = startGame(event, currentScreen, gameVariables, userInputs)
