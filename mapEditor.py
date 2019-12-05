@@ -17,7 +17,6 @@ mapPixelWidth = tileSize * 30
 mapPixelHeight = tileSize * 20
 
 cursorColour = (255, 255, 255)
-
 def tileCoordinateToPixels(x, y):
     tileX = x * tileSize
     tileY = y * tileSize
@@ -75,9 +74,9 @@ def createRectangleList(fileName):
     return rectangleList
 
 # Draw all rectangles from a rectangle list
-def drawRectangleList(rectangleList, colour):
+def drawRectangleList(rectangleList, colour, width=0):
     for i in range(len(rectangleList)):
-        pygame.draw.rect(displaySurface, colour, rectangleList[i])
+        pygame.draw.rect(displaySurface, colour, rectangleList[i], width)
 
 def createNewMap(newMapName):
     path = os.getcwd()
@@ -86,7 +85,7 @@ def createNewMap(newMapName):
     f.close
     f = open("maps\\" + newMapName + "\\portals.txt","w+")
     f.close
-    f = open("maps\\" + newMapName + "\\items.txt","w+")
+    f = open("maps\\" + newMapName + "\\food.txt","w+")
     f.close
 
 def mapSelector(event, currentScreen):
@@ -94,39 +93,26 @@ def mapSelector(event, currentScreen):
     mapSelections = ''
     rectangleMaps = ''
     mapImage = ''
-    newMap = input("New Map? (y/n) ")
-    if newMap == "y":
-        newMapName = input("New Map Name: ")
-        try:
-            createNewMap(newMapName)
-            print("Map created.")
-        except:
-            print("Map already exists.")
-        
-    elif newMap == "n":
-        selectedMap = input("Existing Map Name: ")
-        try:
-            selectedLayer = 'Obstacles'
-            cursorColour = (255, 0, 0)
-            obstacleMap = createRectangleList('maps\\' + selectedMap + '\\obstacles.txt')
-            portalMap = createRectangleList('maps\\' + selectedMap + '\\portals.txt')
-            itemMap = createRectangleList('maps\\' + selectedMap + '\\items.txt')
-            currentMap = obstacleMap
-            rectangleMaps = (currentMap, obstacleMap, portalMap, itemMap)
-            print("Map layer file loaded.")
-            try:
-                mapImage = pygame.image.load('maps\\' + selectedMap + '\\mapBackground.png')
-                mapImage = pygame.transform.scale(mapImage,(mapPixelWidth, mapPixelHeight))
-                print("Map image file Loaded.")
-            except:
-                mapImage = pygame.image.load('defaultMap.png')
-                print("Map image file not found. Default image loaded.")
-            print("Obstacles: " + str(len(obstacleMap)) + ", Portals: " + str(len(portalMap)) + ", Items: " + str(len(itemMap)))
-            mapSelections = (selectedMap, selectedLayer, cursorColour)
-            displaySurface = pygame.display.set_mode((mapPixelWidth, mapPixelHeight), 0, 32)
-            currentScreen = 'mapEditor'
-        except:
-            print("Failed to load map.")
+    selectedMap = "exampleMap"
+
+    selectedLayer = 'Obstacles'
+    cursorColour = (255, 0, 0)
+    obstacleMap = createRectangleList('maps\\' + selectedMap + '\\obstacles.txt')
+    portalMap = createRectangleList('maps\\' + selectedMap + '\\portals.txt')
+
+    currentMap = obstacleMap
+    rectangleMaps = (currentMap, obstacleMap, portalMap)
+    print("Map layer file loaded.")
+    
+    mapImage = pygame.image.load('maps\\' + selectedMap + '\\mapBackground.png')
+    mapImage = pygame.transform.scale(mapImage,(mapPixelWidth, mapPixelHeight))
+    print("Map image file Loaded.")
+
+    print("Obstacles: " + str(len(obstacleMap)) + ", Portals: " + str(len(portalMap)))
+    mapSelections = (selectedMap, selectedLayer, cursorColour)
+    displaySurface = pygame.display.set_mode((mapPixelWidth, mapPixelHeight), 0, 32)
+    currentScreen = 'mapEditor'
+
     return currentScreen, mapSelections, rectangleMaps, mapImage
 
 def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapImage, displayImage, clickAndDrag, userInputs):
@@ -138,23 +124,23 @@ def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapIm
     cursorRect = pygame.Rect(mouseXCoord * tileSize, mouseYCoord * tileSize, tileSize, tileSize)
     startRect, endRect, dragRect = clickAndDrag
     selectedMap, selectedLayer, cursorColour = mapSelections
-    currentMap, obstacleMap, portalMap, itemMap = rectangleMaps
+    currentMap, obstacleMap, portalMap = rectangleMaps
     mouseButton1, mouseButton3 = userInputs
-    mouse1Held, mouse1Init = mouseButton1
-    mouse3Held, mouse3Init = mouseButton3
-    pygame.display.set_caption('Map Editor - Map: ' + selectedMap + ', Layer: ' + selectedLayer + ' (' + str(len(currentMap)) + ')' + ' - X: ' + str(mouseXCoord) + ', Y: ' + str(mouseYCoord))
+    mouse1Held, mouse1Start = mouseButton1
+    mouse3Held, mouse3Start = mouseButton3
+    pygame.display.set_caption('Map Editor - Map: ' + selectedMap + ', Layer: ' + selectedLayer + ' (' + str(len(currentMap)) + ')' + ' - X: ' + str(mouseXCoord) + ', Y: ' + str(mouseYCoord) + ' | SPACE: Save, ESC: Quit, L/R Arrows: Change Layer, Up Arrow: Toggle Image')
     
     if mouse3Held:
-        if mouse3Init:
+        if mouse3Start:
             for i in currentMap[:]:
                 if (mouseXCoord * tileSize == i.x) and (mouseYCoord * tileSize == i.y):
                     currentMap.remove(i)
-            mouse3Init = False
+            mouse3Start = False
             
     if mouse1Held:
-        if mouse1Init:
+        if mouse1Start:
             startRect = pygame.Rect(mouseXCoord * tileSize, mouseYCoord * tileSize, tileSize, tileSize)
-            mouse1Init = False
+            mouse1Start = False
         dragRect.x = startRect.x
         dragRect.y = startRect.y
         if cursorRect.x >= startRect.x and cursorRect.y >= startRect.y:
@@ -174,7 +160,7 @@ def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapIm
             dragRect.x = cursorRect.x
             dragRect.y = cursorRect.y
         
-    if mouse1Held == False and mouse1Init:
+    if mouse1Held == False and mouse1Start:
         endRect = pygame.Rect(mouseXCoord * tileSize, mouseYCoord * tileSize, tileSize, tileSize)
         if endRect.x >= startRect.x and endRect.y >= startRect.y:
             startRect.width = abs(endRect.x - startRect.x) + 32
@@ -196,7 +182,7 @@ def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapIm
             startRect.x = endRect.x
             startRect.y = endRect.y
             currentMap.append(startRect)
-        mouse1Init = False
+        mouse1Start = False
                     
     if event.type == KEYDOWN:
         if event.key == (K_ESCAPE):
@@ -208,7 +194,7 @@ def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapIm
             try:
                 saveMap('maps\\' + selectedMap + '\\obstacles.txt', obstacleMap)
                 saveMap('maps\\' + selectedMap + '\\portals.txt', portalMap)
-                saveMap('maps\\' + selectedMap + '\\items.txt', itemMap)
+                saveMap('maps\\' + selectedMap + '\\food.txt', foodMap)
                 print("Map saved successfully to: maps" + '\\' + selectedMap)
             except:
                 print("Failed to save map.")
@@ -216,15 +202,11 @@ def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapIm
         if event.key == (K_LEFT) and keyHeld == False:
             keyHeld = True
             if selectedLayer == 'Obstacles':
-                selectedLayer = 'Items'
-                obstacleMap = currentMap
-                currentMap = itemMap
-                cursorColour = (255, 0, 255)
-            elif selectedLayer == 'Items':
                 selectedLayer = 'Portals'
-                itemMap = currentMap
+                obstacleMap = currentMap
                 currentMap = portalMap
                 cursorColour = (0, 0, 255)
+                
             elif selectedLayer == 'Portals':
                 selectedLayer = 'Obstacles'
                 portalMap = currentMap
@@ -238,14 +220,10 @@ def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapIm
                 obstacleMap = currentMap
                 currentMap = portalMap
                 cursorColour = (0, 0, 255)
+                
             elif selectedLayer == 'Portals':
-                selectedLayer = 'Items'
-                portalMap = currentMap
-                currentMap = itemMap
-                cursorColour = (255, 0, 255)
-            elif selectedLayer == 'Items':
                 selectedLayer = 'Obstacles'
-                itemMap = currentMap
+                portalMap = currentMap
                 currentMap = obstacleMap
                 cursorColour = (255, 0, 0)
                 
@@ -262,17 +240,19 @@ def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapIm
     pygame.draw.rect(displaySurface, (64, 64, 64), (0, 0, mapPixelWidth, mapPixelHeight))
     drawRectangleList(obstacleMap, (200, 0, 0))
     drawRectangleList(portalMap, (0, 0, 200))
-    drawRectangleList(itemMap, (200, 0, 200))
+    drawRectangleList(obstacleMap, (255, 0, 0), 2)
+    drawRectangleList(portalMap, (0, 0, 255), 2)
     if mouse1Held:
         pygame.draw.rect(displaySurface, (255, 255, 255), dragRect)
+        pygame.draw.rect(displaySurface, (0, 0, 0), dragRect, 2)
     if displayImage == True:
         blit_alpha(displaySurface, mapImage, (0, 0), 128)
     pygame.draw.rect(displaySurface, (cursorColour), ((mouseXCoord) * tileSize, (mouseYCoord) * tileSize, tileSize, tileSize))
     mapSelections = (selectedMap, selectedLayer, cursorColour)
     clickAndDrag = startRect, endRect, dragRect
-    rectangleMaps = (currentMap, obstacleMap, portalMap, itemMap)
-    mouseButton1 = (mouse1Held, mouse1Init)
-    mouseButton3 = (mouse3Held, mouse3Init)
+    rectangleMaps = (currentMap, obstacleMap, portalMap)
+    mouseButton1 = (mouse1Held, mouse1Start)
+    mouseButton3 = (mouse3Held, mouse3Start)
     userInputs = (mouseButton1, mouseButton3)
     return currentScreen, mapSelections, rectangleMaps, keyHeld, mapImage, displayImage, clickAndDrag, userInputs
 
@@ -299,24 +279,24 @@ def main():
             if event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
                     mouse1Held = True
-                    mouse1Init = True
-                    mouseButton1 = (mouse1Held, mouse1Init)
+                    mouse1Start = True
+                    mouseButton1 = (mouse1Held, mouse1Start)
                     userInputs = (mouseButton1, (False, False))
                 if event.button == 3:
                     mouse3Held = True
-                    mouse3Init = True
-                    mouseButton3 = (mouse3Held, mouse3Init)
+                    mouse3Start = True
+                    mouseButton3 = (mouse3Held, mouse3Start)
                     userInputs = ((False, False), mouseButton3)
             if event.type == MOUSEBUTTONUP:
                 if event.button == 1:
                     mouse1Held = False
-                    mouse1Init = True
-                    mouseButton1 = (mouse1Held, mouse1Init)
+                    mouse1Start = True
+                    mouseButton1 = (mouse1Held, mouse1Start)
                     userInputs = (mouseButton1, (False, False))
                 if event.button == 3:
                     mouse3Held = False
-                    mouse3Init = True
-                    mouseButton3 = (mouse3Held, mouse3Init)
+                    mouse3Start = True
+                    mouseButton3 = (mouse3Held, mouse3Start)
                     userInputs = ((False, False), mouseButton3)
         if currentScreen == 'mapSelector':
             currentScreen, mapSelections, rectangleMaps, mapImage = mapSelector(event, currentScreen)
