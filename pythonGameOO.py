@@ -1,19 +1,70 @@
 import pygame
 import sys
 import re
+import random
 from pygame import *
 
-class Player():
-    def __init__(self, location, direction):
-        self.location = game.tileCoordinatesToPixels(location[0], location[1]) # Tuple containing the Player's X and Y Coordinates.
-        self.rect = pygame.Rect(self.location, (game.tileSize, game.tileSize)) # Pygame Rectangle object which uses the player's location and the game's tilesize.
-        self.direct = direction # String which states the direction that the Player is facing.
+class Character():
+    def __init__(self, location, direction, spriteSet):
+        self.location = game.tileCoordinatesToPixels(location[0], location[1]) # Tuple containing the Character's X and Y Coordinates.
+        self.rect = pygame.Rect(self.location, (game.tileSize, game.tileSize)) # Pygame Rectangle object which uses the Character's location and the Game's tilesize.
+        self.direct = direction # String which states the direction that the Character is facing.
+        self.spriteSet = spriteSet
         self.path = [] # List in which Pygame Rectangle objects are added during the execution of Player.createPath() method and used during the Player.move() method.
-        self.frame = 0 # Integer which increments every time the Player takes a step which is used for animating the Player sprite during the Player.move() method.
-        self.sprites = [] # List of sprites which are added during the execution of Player.setSprite() method and used to animate the Player sprite in the Player.move() method.
-        self.dt = 0 # Integer used to slow the Player's movement.
+        self.frame = 0 # Integer which increments every time the Character takes a step which is used for animating the Character sprite during the Character.animateMovement() method.
+        self.sprites = [] # List of sprites which are added during the execution of Character.setSprite() method and used to animate the Player sprite in the Character.animateMovement() method.
+        self.dt = 0 # Integer used to slow the Character's movement.
+        self.isMoving = False
         
-        self.setSprite()    # Load sprites and set initial sprite.
+        self.setSprite() # Load sprites and set initial sprite.
+
+    def setSprite(self):
+        # Load all sprite images and scale based on the Game's tilesize.
+        spriteUp = pygame.image.load('images\\sprites\\' + self.spriteSet + '\\' + self.spriteSet + 'Up.png')
+        spriteUp = pygame.transform.scale(spriteUp,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+        spriteUpStep1 = pygame.image.load('images\\sprites\\' + self.spriteSet + '\\' + self.spriteSet + 'UpStep1.png')
+        spriteUpStep1 = pygame.transform.scale(spriteUpStep1,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+        spriteUpStep2 = pygame.image.load('images\\sprites\\' + self.spriteSet + '\\' + self.spriteSet + 'UpStep2.png')
+        spriteUpStep2 = pygame.transform.scale(spriteUpStep2,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+        
+        spriteDown = pygame.image.load('images\\sprites\\' + self.spriteSet + '\\' + self.spriteSet + 'Down.png')
+        spriteDown = pygame.transform.scale(spriteDown,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+        spriteDownStep1 = pygame.image.load('images\\sprites\\' + self.spriteSet + '\\' + self.spriteSet + 'DownStep1.png')
+        spriteDownStep1 = pygame.transform.scale(spriteDownStep1,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+        spriteDownStep2 = pygame.image.load('images\\sprites\\' + self.spriteSet + '\\' + self.spriteSet + 'DownStep2.png')
+        spriteDownStep2 = pygame.transform.scale(spriteDownStep2,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+
+        spriteLeft = pygame.image.load('images\\sprites\\' + self.spriteSet + '\\' + self.spriteSet + 'Left.png')
+        spriteLeft = pygame.transform.scale(spriteLeft,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+        spriteLeftStep1 = pygame.image.load('images\\sprites\\' + self.spriteSet + '\\' + self.spriteSet + 'LeftStep1.png')
+        spriteLeftStep1 = pygame.transform.scale(spriteLeftStep1,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+        spriteLeftStep2 = pygame.image.load('images\\sprites\\' + self.spriteSet + '\\' + self.spriteSet + 'LeftStep2.png')
+        spriteLeftStep2 = pygame.transform.scale(spriteLeftStep2,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+
+        spriteRight = pygame.image.load('images\\sprites\\' + self.spriteSet + '\\' + self.spriteSet + 'Right.png')
+        spriteRight = pygame.transform.scale(spriteRight,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+        spriteRightStep1 = pygame.image.load('images\\sprites\\' + self.spriteSet + '\\' + self.spriteSet + 'RightStep1.png')
+        spriteRightStep1 = pygame.transform.scale(spriteRightStep1,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+        spriteRightStep2 = pygame.image.load('images\\sprites\\' + self.spriteSet + '\\' + self.spriteSet + 'RightStep2.png')
+        spriteRightStep2 = pygame.transform.scale(spriteRightStep2,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+
+        # Set sprite based on the direction the character is facing.
+        if self.direct == 'up':
+            self.image = spriteUp
+        elif self.direct == 'down':
+            self.image = spriteDown
+        elif self.direct == 'left':
+            self.image = spriteLeft
+        elif self.direct == 'right':
+            self.image = spriteRight
+
+        # sprite.sprites is updated as a two-dimensional list containing a list of sprites for each Character direction.
+        upSprites = [spriteUp, spriteUpStep1, spriteUpStep2]
+        downSprites = [spriteDown, spriteDownStep1, spriteDownStep2]
+        leftSprites = [spriteLeft, spriteLeftStep1, spriteLeftStep2]
+        rightSprites = [spriteRight, spriteRightStep1, spriteRightStep2]
+        
+        self.sprites = [upSprites, downSprites, leftSprites, rightSprites]
 
     def updateSize(self, oldTileSize):
         scale = (oldTileSize / game.tileSize)
@@ -21,73 +72,143 @@ class Player():
         self.setSprite()
         #self.image = pygame.transform.scale(self.image, (game.tileSize, int(game.tileSize + (game.tileSize / 4))))
 
-    def setSprite(self):
-        # Load all sprite images and scale based on the Game's tilesize.
-        playerUp = pygame.image.load('images\\sprites\\playerUp.png')
-        playerUp = pygame.transform.scale(playerUp,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
-        playerUpStep1 = pygame.image.load('images\\sprites\\playerUpStep1.png')
-        playerUpStep1 = pygame.transform.scale(playerUpStep1,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
-        playerUpStep2 = pygame.image.load('images\\sprites\\playerUpStep2.png')
-        playerUpStep2 = pygame.transform.scale(playerUpStep2,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+    def drawRect(self, colour=(0,0,0), width=0): # Draw the Character's rect object.
+        pygame.draw.rect(game.surface, colour, self.rect, width)
         
-        playerDown = pygame.image.load('images\\sprites\\playerDown.png')
-        playerDown = pygame.transform.scale(playerDown,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
-        playerDownStep1 = pygame.image.load('images\\sprites\\playerDownStep1.png')
-        playerDownStep1 = pygame.transform.scale(playerDownStep1,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
-        playerDownStep2 = pygame.image.load('images\\sprites\\playerDownStep2.png')
-        playerDownStep2 = pygame.transform.scale(playerDownStep2,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
+    def displaySprite(self): # Displays the Character's sprite. Default sprite height is 40.
+        game.surface.blit(self.image, (self.rect.x, self.rect.y - game.tileSize / 4))
 
-        playerLeft = pygame.image.load('images\\sprites\\playerLeft.png')
-        playerLeft = pygame.transform.scale(playerLeft,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
-        playerLeftStep1 = pygame.image.load('images\\sprites\\playerLeftStep1.png')
-        playerLeftStep1 = pygame.transform.scale(playerLeftStep1,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
-        playerLeftStep2 = pygame.image.load('images\\sprites\\playerLeftStep2.png')
-        playerLeftStep2 = pygame.transform.scale(playerLeftStep2,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
-
-        playerRight = pygame.image.load('images\\sprites\\playerRight.png')
-        playerRight = pygame.transform.scale(playerRight,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
-        playerRightStep1 = pygame.image.load('images\\sprites\\playerRightStep1.png')
-        playerRightStep1 = pygame.transform.scale(playerRightStep1,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
-        playerRightStep2 = pygame.image.load('images\\sprites\\playerRightStep2.png')
-        playerRightStep2 = pygame.transform.scale(playerRightStep2,(game.tileSize, int(game.tileSize + (game.tileSize / 4))))
-
-        # Set sprite based on the direction the player is facing.
+    def animateMovement(self):
         if self.direct == 'up':
-            self.image = playerUp
+            if self.frame == 0:
+                self.image = self.sprites[0][0]
+            elif self.frame == 1:
+                self.image = self.sprites[0][1]
+            elif self.frame == 2:
+                self.image = self.sprites[0][0]
+            elif self.frame == 3:
+                self.image = self.sprites[0][2]
+                
         elif self.direct == 'down':
-            self.image = playerDown
+            if self.frame == 0:
+                self.image = self.sprites[1][0]
+            elif self.frame == 1:
+                self.image = self.sprites[1][1]
+            elif self.frame == 2:
+                self.image = self.sprites[1][0]
+            elif self.frame == 3:
+                self.image = self.sprites[1][2]
+                
         elif self.direct == 'left':
-            self.image = playerLeft
+            if self.frame == 0:
+                self.image = self.sprites[2][0]
+            elif self.frame == 1:
+                self.image = self.sprites[2][1]
+            elif self.frame == 2:
+                self.image = self.sprites[2][0]
+            elif self.frame == 3:
+                self.image = self.sprites[2][2]
+                
         elif self.direct == 'right':
-            self.image = playerRight
+            if self.frame == 0:
+                self.image = self.sprites[3][0]
+            elif self.frame == 1:
+                self.image = self.sprites[3][1]
+            elif self.frame == 2:
+                self.image = self.sprites[3][0]
+            elif self.frame == 3:
+                self.image = self.sprites[3][2]
 
-        # Player.sprites is updated as a two-dimensional list containing a list of sprites for each Player direction.
-        upSprites = [playerUp, playerUpStep1, playerUpStep2]
-        downSprites = [playerDown, playerDownStep1, playerDownStep2]
-        leftSprites = [playerLeft, playerLeftStep1, playerLeftStep2]
-        rightSprites = [playerRight, playerRightStep1, playerRightStep2]
+        self.frame += 1
+        if self.frame == 4:
+            self.frame = 0
+            
+class NPC(Character):
+    def __init__(self, location, direction, spriteSet, behaviour, wanderRange):
+        super().__init__(location, direction, spriteSet)
+        self.behaviour = behaviour
+        self.wanderRange = wanderRange
         
-        self.sprites = [upSprites, downSprites, leftSprites, rightSprites]
+    def drawWanderRange(self):
+        # Draw the NPC's starting position
+        pygame.draw.rect(game.surface,(0, 255, 255), (self.location, (game.tileSize, game.tileSize)), 1)
+        # Draw the NPC's wander range
+        pygame.draw.rect(game.surface, (0, 255, 255), ((self.location[0] - (self.wanderRange * game.tileSize), self.location[1] - (self.wanderRange * game.tileSize)), (game.tileSize + ((self.wanderRange * game.tileSize)*2), (game.tileSize + ((self.wanderRange * game.tileSize)*2)))), 1)
         
-    def createPath(self, cursorObj, mapObj):
+    def doBehaviour(self, mapObj):
+        if self.behaviour == 'wander':
+            self.wander(mapObj)
+        elif self.behaviour == 'followPlayer':
+            self.followPlayer()
+        
+    def wander(self, mapObj): # NPC moves around randomly.
+        self.dt += 1
+        if self.dt % 7 == 0:
+            if self.isMoving == False:
+                i = random.randint(0, 8)
+                if i == 1:
+                    self.direct = 'up'
+                    self.isMoving = True
+                elif i == 2:
+                    self.direct = 'down'
+                    self.isMoving = True
+                elif i == 3:
+                    self.direct = 'left'
+                    self.isMoving = True
+                elif i == 4:
+                    self.direct = 'right'
+                    self.isMoving = True
+                    
+            if self.isMoving == True:
+                if self.direct == 'up':
+                    self.rect.y -= (game.tileSize / 4)
+                    for i in mapObj.obstacles[:]:
+                        if self.rect.colliderect(i) or self.rect.y < self.location[1] - (self.wanderRange * game.tileSize):
+                            self.rect.y += (game.tileSize / 4)
+                            self.isMoving = False
+                elif self.direct == 'down':
+                    self.rect.y += (game.tileSize / 4)
+                    for i in mapObj.obstacles[:]:
+                        if self.rect.colliderect(i) or self.rect.y > self.location[1] + (self.wanderRange * game.tileSize):
+                            self.rect.y -= (game.tileSize / 4)
+                            self.isMoving = False
+                elif self.direct == 'left':
+                    self.rect.x -= (game.tileSize / 4)
+                    for i in mapObj.obstacles[:]:
+                        if self.rect.colliderect(i) or self.rect.x < self.location[0] - (self.wanderRange * game.tileSize):
+                            self.rect.x += (game.tileSize / 4)
+                            self.isMoving = False
+                elif self.direct == 'right':
+                    self.rect.x += (game.tileSize / 4)
+                    for i in mapObj.obstacles[:]:
+                        if self.rect.colliderect(i) or self.rect.x > self.location[0] + (self.wanderRange * game.tileSize):
+                            self.rect.x -= (game.tileSize / 4)
+                            self.isMoving = False
+                if self.rect.x % game.tileSize == 0 and self.rect.y % game.tileSize == 0:
+                    self.isMoving = False
+                    
+                self.animateMovement()
+    
+    def talk(self, message): # Displays an NPC message on the screen.
+        pass
+
+    def followPlayer(self): # NPC follows the player.
+        pass
+
+class Player(Character):        
+    def createPath(self, cursorObj, mapObj): # Creates a route around the Map's obstacles from the Player rect to the Cursor rect.
         self.path = game.aStar(self.rect, cursorObj.rect, mapObj.obstacles, mapObj.dimensions)
 
-    def drawPath(self):
+    def drawPath(self): # Draws a line of the route created in the createPath() method.
         for i in range(len(self.path)):
             if i == len(self.path) - 1:
                 break
-            if i == 0:
+            if i == 0: # Draw a line from the centre of Player.rect to the centre of the first rect of Player.path.
                 pygame.draw.line(game.surface, (0, 0, 0), (self.rect.x + game.tileSize / 2, self.rect.y + game.tileSize / 2), (self.path[i+1].x + game.tileSize / 2, self.path[i+1].y + game.tileSize / 2))
-            else:
+            else: # Draw a line from the centre of the current rect in Player.path to the centre of the next rect in Player.path.
                 pygame.draw.line(game.surface, (0, 0, 0), (self.path[i].x + game.tileSize / 2, self.path[i].y + game.tileSize / 2), (self.path[i+1].x + game.tileSize / 2, self.path[i+1].y + game.tileSize / 2), 1)
-
-    def drawRect(self):
-        pygame.draw.rect(game.surface, (0, 255, 0), self.rect)
-
-    def displaySprite(self):
-        game.surface.blit(self.image, (self.rect.x, self.rect.y - game.tileSize / 4))
         
-    def move(self):
+    def followPath(self):
         self.dt += 1
         if self.dt % 7 == 0:
             if self.rect.y > self.path[1].y:
@@ -106,51 +227,7 @@ class Player():
             if self.rect.x == self.path[1].x and self.rect.y == self.path[1].y:
                 self.path.pop(0)
             else:
-                if self.direct == 'up':
-                    if self.frame == 0:
-                        self.image = self.sprites[0][0]
-                    elif self.frame == 1:
-                        self.image = self.sprites[0][1]
-                    elif self.frame == 2:
-                        self.image = self.sprites[0][0]
-                    elif self.frame == 3:
-                        self.image = self.sprites[0][2]
-                        
-                elif self.direct == 'down':
-                    if self.frame == 0:
-                        self.image = self.sprites[1][0]
-                    elif self.frame == 1:
-                        self.image = self.sprites[1][1]
-                    elif self.frame == 2:
-                        self.image = self.sprites[1][0]
-                    elif self.frame == 3:
-                        self.image = self.sprites[1][2]
-                        
-                elif self.direct == 'left':
-                    if self.frame == 0:
-                        self.image = self.sprites[2][0]
-                    elif self.frame == 1:
-                        self.image = self.sprites[2][1]
-                    elif self.frame == 2:
-                        self.image = self.sprites[2][0]
-                    elif self.frame == 3:
-                        self.image = self.sprites[2][2]
-                        
-                elif self.direct == 'right':
-                    if self.frame == 0:
-                        self.image = self.sprites[3][0]
-                    elif self.frame == 1:
-                        self.image = self.sprites[3][1]
-                    elif self.frame == 2:
-                        self.image = self.sprites[3][0]
-                    elif self.frame == 3:
-                        self.image = self.sprites[3][2]
-
-                self.frame += 1
-                if self.frame == 4:
-                    self.frame = 0
-
-        
+                self.animateMovement()
 
 class Map():
     def __init__(self, name, location):
@@ -212,9 +289,10 @@ class Node(): # Used by the Game.aStar() Method to represent a tile.
         return self.rect == other.rect
 
 class Game():
-    def __init__(self, tileSize):
-        self.tileSize = tileSize
-        self.surface = pygame.display.set_mode((960, 640))
+    def __init__(self, tileSize=32):
+        self.tileSize = tileSize # Width and height of each tile in pixels. Default tile size is 32.
+        self.surface = pygame.display.set_mode((tileSize * 30, tileSize * 20))
+        self.npcList = []
         
     def tileCoordinatesToPixels(self, x, y):
         tileX = x * self.tileSize
@@ -325,13 +403,35 @@ class Game():
                         openSet.append(child)
         return []
 
-    def initArea(self, mapName):
-        self.tilemap = Map(mapName, (0, 0))
-        self.player = Player((6, 8), 'down')
+    def initArea(self, file):
+        mapName, mapLocation, playerLocation = self.loadSave("saves\\" + file + ".txt")
+        self.tilemap = Map(mapName, mapLocation)
+        self.player = Player(playerLocation, 'down', 'player')
+        npc1 = NPC((10, 11), 'up', 'player', 'wander', 2)
+        npc2 = NPC((9, 15), 'up', 'player', 'wander', 1)
+        npc3 = NPC((24, 9), 'up', 'player', 'wander', 3)
+        self.npcList.append(npc1)
+        self.npcList.append(npc2)
+        self.npcList.append(npc3)
         self.cursor = Cursor()
 
+    def loadSave(self, fileName):
+        file = open(fileName, 'r')
+        lines = file.readlines()
+        fileNum = int(lines[0])
+        mapName = lines[1].strip()
+        mapLocation = [int(lines[2]), int(lines[3])]
+        playerLocation = [int(lines[4]), int(lines[5])]
+        file.close()
+
+        return mapName, mapLocation, playerLocation
+    
+    def closeGame(self):
+        pygame.quit()
+        sys.exit()
+        
     def main(self):
-        self.initArea("exampleMap")
+        self.initArea("save_data")
         
         fpsClock = pygame.time.Clock()
         mouse1Init = False
@@ -340,8 +440,7 @@ class Game():
         while True:
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.closeGame()
                 if event.type == MOUSEBUTTONDOWN:
                     if event.button == 1:
                         mouse1Held = True
@@ -359,12 +458,16 @@ class Game():
                     if event.button == 3:
                         mouse3Held = False
                         mouse3Init = False
-                        
+
+            if self.player.rect.colliderect(self.npcList[0].rect):
+                self.closeGame()
+                
             pygame.draw.rect(game.surface, (255,255,255), (0,0,960,640))
-            self.tilemap.drawObstacles((0, 0, 255))
+            
             if mouse1Init:
                 mouse1Init = False
                 self.player.createPath(self.cursor, self.tilemap)
+                
             if mouse3Init:
                 mouse3Init = False
                 oldTileSize = game.tileSize
@@ -375,19 +478,32 @@ class Game():
             self.tilemap.displayBackgroundImage()
             
             if len(self.player.path) > 1:
-                self.player.move()
+                self.player.followPath()
                 self.player.drawPath()
             else:
                 self.player.setSprite()
-        
+            
+            self.player.drawRect((0, 255, 0))
+            
+            for i in self.npcList[:]:
+                i.doBehaviour(self.tilemap)
+                i.drawRect((0, 255, 255))
+                i.displaySprite()
+
             self.player.displaySprite()
-            pygame.draw.rect(game.surface, (255,0,0), self.cursor.rect, 2)
+            
+            for i in self.npcList[:]:
+                i.drawWanderRange()
+
+            
+            pygame.draw.rect(game.surface, (0,0,0), self.cursor.rect, 2)
             self.cursor.update()
+            pygame.display.set_caption('x: ' + str(self.cursor.rect.x / game.tileSize) + ' y: ' + str(self.cursor.rect.y / game.tileSize))
             pygame.display.update()
             fpsClock.tick(60)
 
 
 if __name__ == '__main__':
     pygame.init()
-    game = Game(32)
+    game = Game(36)
     game.main()
