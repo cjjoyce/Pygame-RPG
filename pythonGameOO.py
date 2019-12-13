@@ -458,9 +458,6 @@ class Game():
                     if event.button == 3:
                         mouse3Held = False
                         mouse3Init = False
-
-            if self.player.rect.colliderect(self.npcList[0].rect):
-                self.closeGame()
                 
             pygame.draw.rect(game.surface, (255,255,255), (0,0,960,640))
             
