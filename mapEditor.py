@@ -142,41 +142,41 @@ def mapEditor(event, currentScreen, mapSelections, rectangleMaps, keyHeld, mapIm
         dragRect.x = startRect.x
         dragRect.y = startRect.y
         if cursorRect.x >= startRect.x and cursorRect.y >= startRect.y:
-            dragRect.width = abs(cursorRect.x - startRect.x) + 32
-            dragRect.height = abs(cursorRect.y - startRect.y) + 32
+            dragRect.width = abs(cursorRect.x - startRect.x) + tileSize
+            dragRect.height = abs(cursorRect.y - startRect.y) + tileSize
         elif cursorRect.x < startRect.x and cursorRect.y > startRect.y:
-            dragRect.width = abs(cursorRect.x - startRect.x) + 32
+            dragRect.width = abs(cursorRect.x - startRect.x) + tileSize
             dragRect.x = cursorRect.x
-            dragRect.height = abs(cursorRect.y - startRect.y) + 32
+            dragRect.height = abs(cursorRect.y - startRect.y) + tileSize
         elif cursorRect.x > startRect.x and cursorRect.y < startRect.y:
-            dragRect.width = abs(cursorRect.x - startRect.x) + 32
-            dragRect.height = abs(cursorRect.y - startRect.y) + 32
+            dragRect.width = abs(cursorRect.x - startRect.x) + tileSize
+            dragRect.height = abs(cursorRect.y - startRect.y) + tileSize
             dragRect.y = cursorRect.y
         else:
-            dragRect.width = abs(cursorRect.x - startRect.x) + 32
-            dragRect.height = abs(cursorRect.y - startRect.y) + 32
+            dragRect.width = abs(cursorRect.x - startRect.x) + tileSize
+            dragRect.height = abs(cursorRect.y - startRect.y) + tileSize
             dragRect.x = cursorRect.x
             dragRect.y = cursorRect.y
         
     if mouse1Held == False and mouse1Init:
         endRect = pygame.Rect(mouseXCoord * tileSize, mouseYCoord * tileSize, tileSize, tileSize)
         if endRect.x >= startRect.x and endRect.y >= startRect.y:
-            startRect.width = abs(endRect.x - startRect.x) + 32
-            startRect.height = abs(endRect.y - startRect.y) + 32
+            startRect.width = abs(endRect.x - startRect.x) + tileSize
+            startRect.height = abs(endRect.y - startRect.y) + tileSize
             currentMap.append(startRect)
         elif endRect.x < startRect.x and endRect.y > startRect.y:
-            startRect.width = abs(endRect.x - startRect.x) + 32
+            startRect.width = abs(endRect.x - startRect.x) + tileSize
             startRect.x = endRect.x
-            startRect.height = abs(endRect.y - startRect.y) + 32
+            startRect.height = abs(endRect.y - startRect.y) + tileSize
             currentMap.append(startRect)
         elif endRect.x > startRect.x and endRect.y < startRect.y:
-            startRect.width = abs(endRect.x - startRect.x) + 32
-            startRect.height = abs(endRect.y - startRect.y) + 32
+            startRect.width = abs(endRect.x - startRect.x) + tileSize
+            startRect.height = abs(endRect.y - startRect.y) + tileSize
             startRect.y = endRect.y
             currentMap.append(startRect)
         else:
-            startRect.width = abs(endRect.x - startRect.x) + 32
-            startRect.height = abs(endRect.y - startRect.y) + 32
+            startRect.width = abs(endRect.x - startRect.x) + tileSize
+            startRect.height = abs(endRect.y - startRect.y) + tileSize
             startRect.x = endRect.x
             startRect.y = endRect.y
             currentMap.append(startRect)
