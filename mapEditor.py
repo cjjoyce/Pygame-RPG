@@ -64,7 +64,6 @@ def createRectangleList(fileName):
     for i in range(len(lines)):
         lineString = lines[i]
         x, y, width, height = lineString.split(",")
-        print(x)
         tileX, tileY = tileCoordinateToPixels(int(x), int(y))
         width, height = tileCoordinateToPixels(int(width), int(height))
         rectangleList.append(pygame.Rect(tileX, tileY, width, height))
