@@ -195,7 +195,7 @@ class NPC(Character):
     def followPlayer(self): # NPC follows the player.
         pass
 
-class Player(Character):        
+class Player(Character):
     def createPath(self, cursorObj, mapObj): # Creates a route around the Map's obstacles from the Player rect to the Cursor rect.
         self.path = game.aStar(self.rect, cursorObj.rect, mapObj.obstacles, mapObj.dimensions)
 
@@ -244,15 +244,17 @@ class Map():
         self.dimensions = (self.backgroundImage.get_width(), self.backgroundImage.get_height())
         self.obstacles = self.createRectangleList('maps\\' + self.name + '\\obstacles.txt')
         
+    # Load map tiles from a text file into a list of rectangles
     def createRectangleList(self, fileName):
         file = open(fileName, 'r')
         lines = file.readlines()
         rectangleList = []
-
         # Retrieve values from text file and append to rectangleList
-        for i in range(int(len(lines) / 5)):
-            tileX, tileY = game.tileCoordinatesToPixels(int(lines[i * 5 + 1]), int(lines[i * 5 + 2]))
-            width, height = game.tileCoordinatesToPixels(int(lines[i * 5 + 3]), int(lines[i * 5 + 4]))
+        for i in range(len(lines)):
+            lineString = lines[i]
+            x, y, width, height = lineString.split(",")
+            tileX, tileY = game.tileCoordinatesToPixels(int(x), int(y))
+            width, height = game.tileCoordinatesToPixels(int(width), int(height))
             rectangleList.append(pygame.Rect(tileX, tileY, width, height))
 
         file.close()
