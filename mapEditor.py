@@ -45,29 +45,28 @@ def clearFile(fileName):
     f.truncate()
 
 def saveMap(fileName, currentMap):
-    j = 0
     clearFile(fileName)
-    for i in currentMap[:]:
-        x = tilePixelsToCoordinates(i.x, i.y)[0]
-        y = tilePixelsToCoordinates(i.x, i.y)[1]
-        width, height = tilePixelsToCoordinates(i.width, i.height)
-        addLine(fileName, '--\n')
-        addLine(fileName, str(int(x)) + '\n')
-        addLine(fileName, str(int(y)) + '\n')
-        addLine(fileName, str(int(width)) + '\n')
-        addLine(fileName, str(int(height)) + '\n')
-        j+=1
+    for i in range(len(currentMap)):
+        x, y = tilePixelsToCoordinates(currentMap[i].x, currentMap[i].y)
+        width, height = tilePixelsToCoordinates(currentMap[i].width, currentMap[i].height)
+        lineString = str(int(x)) + "," + str(int(y)) + "," + str(int(width)) + "," + str(int(height))
+        # Don't add a new line at the end of the file
+        if i < len(currentMap) - 1:
+            lineString += "\n"
+        addLine(fileName, lineString)
 
 # Load map tiles from a text file into a list of rectangles
 def createRectangleList(fileName):
     file = open(fileName, 'r')
     lines = file.readlines()
     rectangleList = []
-
     # Retrieve values from text file and append to rectangleList
-    for i in range(int(len(lines) / 5)):
-        tileX, tileY = tileCoordinateToPixels(int(lines[i * 5 + 1]), int(lines[i * 5 + 2]))
-        width, height = tileCoordinateToPixels(int(lines[i * 5 + 3]), int(lines[i * 5 + 4]))
+    for i in range(len(lines)):
+        lineString = lines[i]
+        x, y, width, height = lineString.split(",")
+        print(x)
+        tileX, tileY = tileCoordinateToPixels(int(x), int(y))
+        width, height = tileCoordinateToPixels(int(width), int(height))
         rectangleList.append(pygame.Rect(tileX, tileY, width, height))
 
     file.close()
